@@ -1,8 +1,10 @@
 
 #include "shoot02.h"
-#include "mathlib.h"
-#include "r_shader.h"
 
+#include "r_shader.h"
+#include "r_camera.h"
+
+#include <cglm/cglm.h>
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
@@ -60,10 +62,6 @@ int main(int argc, char *argv[]) {
         0.5, -0.5, 0
     };
 
-    mat4_t perspective = MAT4_IDENTITY;
-    mat4_perspective(perspective, 90.0f, 1000.0f, 0.1f);
-    mat4_print(perspective);
-
     uint32_t vao;
     uint32_t vbo;
 
@@ -83,10 +81,28 @@ int main(int argc, char *argv[]) {
     glEnableVertexAttribArray(0);
 
     glUseProgram(program);
-    int location = glGetUniformLocation(program, "perspective");
-    glUniformMatrix4fv(location, 1, GL_FALSE, perspective[0]);
+
+    r_camera_t camera = {
+        .projection_view = GLM_MAT4_IDENTITY_INIT,
+        .projection = GLM_MAT4_IDENTITY_INIT,
+        .fovy = 90,
+        .pos = { 0, 0, 1 },
+        .rot = GLM_QUAT_IDENTITY_INIT,
+    };
+
+    r_camera_update_projection(&camera, 4.f / 3.f);
+    r_camera_upload(&camera, program);
+
+    mat4 model = GLM_MAT4_IDENTITY_INIT;
+    int model_location = glGetUniformLocation(program, "model");
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     while (!glfwWindowShouldClose(r_window)) {
+        glm_rotate(model, 0.01f, (vec3) { 0, 1, 0 });
+        glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
+
+        glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(r_window);
         glfwPollEvents();
