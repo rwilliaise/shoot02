@@ -1,0 +1,9 @@
+
+# clangd
+.cache
+compile_commands.json
+
+# make
+shoot02
+*.o
+
