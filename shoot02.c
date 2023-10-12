@@ -1,6 +1,7 @@
 
 #include "shoot02.h"
 
+#include "r_model.h"
 #include "r_shader.h"
 #include "r_camera.h"
 #include "glad/gl.h"
@@ -17,7 +18,7 @@ r_camera_t camera = {
     .projection_view = GLM_MAT4_IDENTITY_INIT,
     .projection = GLM_MAT4_IDENTITY_INIT,
     .fovy = 90,
-    .pos = { 0, 0, 1 },
+    .pos = { 0, 0, 1.5 },
     .rot = GLM_QUAT_IDENTITY_INIT,
 };
 
@@ -69,18 +70,6 @@ int main(int argc, char *argv[]) {
     glfwSetFramebufferSizeCallback(r_window, r_resize);
     r_resize(r_window, 640, 480);
 
-    const struct vertex { vec3 pos; vec2 uv; } cube[] = {
-        { { 0.5, 0.5, 0 }, { 1.0, 0.0 } }, // top right
-        { { 0.5, -0.5, 0 }, { 1.0, 1.0 } }, // bottom right
-        { { -0.5, -0.5, 0 }, { 0.0, 1.0 } }, // bottom left
-        { { -0.5, 0.5, 0 }, { 0.0, 0.0 } }, // top left
-    };
-
-    const uint32_t indices[] = {
-        0, 1, 3,
-        1, 2, 3,
-    };
-
     GLFWimage icon;
     icon.pixels = stbi_load("res/textures/eyes.png", &icon.width, &icon.height, NULL, 0);
     glfwSetWindowIcon(r_window, 1, &icon);
@@ -92,27 +81,6 @@ int main(int argc, char *argv[]) {
         glfwTerminate();
         return 1;
     }
-
-    uint32_t vao;
-    uint32_t vbo;
-    uint32_t ebo;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-    glGenBuffers(1, &ebo);
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(cube), cube, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct vertex), NULL);
-
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(struct vertex), (void *) offsetof(struct vertex, uv));
 
     glUseProgram(program);
 
@@ -129,6 +97,8 @@ int main(int argc, char *argv[]) {
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
 
+    r_model_t *cube_model = r_model_load("res/models/monkey.obj");
+
     glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
     r_camera_update_projection(&camera, 4.f / 3.f);
@@ -138,17 +108,22 @@ int main(int argc, char *argv[]) {
     int model_location = glGetUniformLocation(program, "model");
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(r_window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm_rotate(model, 0.01f, (vec3) { 0, 1, 0 });
         glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+
+        r_model_draw(cube_model);
+
         glfwSwapBuffers(r_window);
         glfwPollEvents();
     }
+
+    r_model_free(cube_model);
     glfwTerminate();
 
     return 0;
