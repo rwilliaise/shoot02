@@ -1,6 +1,7 @@
 
 #include "shoot02.h"
 
+#include "libmap/map_parser.h"
 #include "r_model.h"
 #include "r_shader.h"
 #include "r_camera.h"
@@ -17,8 +18,8 @@ uint32_t program = 0;
 r_camera_t camera = {
     .projection_view = GLM_MAT4_IDENTITY_INIT,
     .projection = GLM_MAT4_IDENTITY_INIT,
-    .fovy = 90,
-    .pos = { 0, 0, 1.5 },
+    .fovy = 60.f,
+    .pos = { 0, 0, 2 },
     .rot = GLM_QUAT_IDENTITY_INIT,
 };
 
@@ -86,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     uint32_t texture;
     int w, h, channels;
-    unsigned char *data = stbi_load("res/textures/eyes.png", &w, &h, &channels, 3);
+    unsigned char *data = stbi_load("res/textures/conc00.png", &w, &h, &channels, 3);
 
     glGenTextures(1, &texture);
     glActiveTexture(GL_TEXTURE0);
@@ -96,6 +97,8 @@ int main(int argc, char *argv[]) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
+
+    map_parser_load("res/maps/debug00.map");
 
     r_model_t *cube_model = r_model_load("res/models/monkey.obj");
 

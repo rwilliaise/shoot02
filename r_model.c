@@ -114,7 +114,6 @@ static void r_traverse_node(r_model_t **pM, const struct aiScene *scene, const s
     if (*pM == NULL) return;
     M = *pM;
 
-    
     for (int i = 0; i < node->mNumMeshes; i++) {
         const struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         _debug(start + i);
@@ -141,7 +140,7 @@ r_model_t *r_model_load(const char *path) {
     }
 
     r_model_t *M = malloc(sizeof(r_model_t));
-    memset(M, 0, sizeof(r_model_t));
+    M->mesh_count = 0;
     r_traverse_node(&M, scene, scene->mRootNode);
 
     if (M == NULL) {

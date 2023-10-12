@@ -1,9 +1,10 @@
 #ifndef GEO_GENERATOR_H
 #define GEO_GENERATOR_H
 
+#include <cglm/cglm.h>
+
 #include "map_data.h"
 #include "libmap.h"
-#include "vector.h"
 #include "brush.h"
 
 extern LIBMAP_API void geo_generator_run();

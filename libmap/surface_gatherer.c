@@ -51,9 +51,6 @@ void surface_gatherer_set_worldspawn_layer_filter(bool filter)
 
 bool surface_gatherer_filter_entity(int entity_idx)
 {
-    const entity *ents = map_data_get_entities();
-    const entity *ent = &ents[entity_idx];
-
     // Omit filtered entity indices
     if(entity_filter_idx != -1 && entity_idx != entity_filter_idx)
     {

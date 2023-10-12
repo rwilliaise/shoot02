@@ -9,7 +9,7 @@ void r_camera_upload(r_camera_t *C, uint32_t program) {
 }
 
 void r_camera_update_projection(r_camera_t *C, float aspect) {
-    glm_perspective(C->fovy, aspect, 0.1f, 1000.f, C->projection);
+    glm_perspective(glm_rad(C->fovy), aspect, 0.1f, 1000.f, C->projection);
     r_camera_update(C);
 }
 

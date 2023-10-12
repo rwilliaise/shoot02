@@ -1,8 +1,9 @@
 #ifndef FACE_H
 #define FACE_H
 
+#include <cglm/cglm.h>
+
 #include "stdbool.h"
-#include "vector.h"
 
 typedef struct face_points
 {

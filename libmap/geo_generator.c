@@ -28,19 +28,24 @@ int sort_vertices_by_winding(const void *lhs_in, const void *rhs_in)
     const vec3 *lhs = (const vec3 *)lhs_in;
     const vec3 *rhs = (const vec3 *)rhs_in;
 
-    face *face_inst = &entities[wind_entity_idx].brushes[wind_brush_idx].faces[wind_face_idx];
-    face_geometry *face_geo_inst = &entity_geo[wind_entity_idx].brushes[wind_brush_idx].faces[wind_face_idx];
+    vec3 u;
+    glm_vec3_normalize_to(wind_face_basis, u);
+    
+    vec3 v;
+    glm_vec3_cross(u, wind_face_normal, v);
+    glm_vec3_normalize(v);
+            
+    vec3 local_lhs;
+    glm_vec3_sub((float *) *lhs, wind_face_center, local_lhs);
 
-    vec3 u = vec3_normalize(wind_face_basis);
-    vec3 v = vec3_normalize(vec3_cross(u, wind_face_normal));
+    double lhs_pu = glm_vec3_dot(local_lhs, u);
+    double lhs_pv = glm_vec3_dot(local_lhs, v);
 
-    vec3 local_lhs = vec3_sub(*lhs, wind_face_center);
-    double lhs_pu = vec3_dot(local_lhs, u);
-    double lhs_pv = vec3_dot(local_lhs, v);
+    vec3 local_rhs;
+    glm_vec3_sub((float *) *rhs, wind_face_center, local_rhs);
 
-    vec3 local_rhs = vec3_sub(*rhs, wind_face_center);
-    double rhs_pu = vec3_dot(local_rhs, u);
-    double rhs_pv = vec3_dot(local_rhs, v);
+    double rhs_pu = glm_vec3_dot(local_rhs, u);
+    double rhs_pv = glm_vec3_dot(local_rhs, v);
 
     double lhs_angle = atan2(lhs_pv, lhs_pu);
     double rhs_angle = atan2(rhs_pv, rhs_pu);
@@ -90,12 +95,12 @@ void geo_generator_run()
     for (int e = 0; e < entity_count; ++e)
     {
         entity *ent_inst = &entities[e];
-        ent_inst->center = (vec3){0.0, 0.0, 0.0};
+        glm_vec3_zero(ent_inst->center);
 
         for (int b = 0; b < ent_inst->brush_count; ++b)
         {
             brush *brush_inst = &ent_inst->brushes[b];
-            brush_inst->center = (vec3){0.0, 0.0, 0.0};
+            glm_vec3_zero(brush_inst->center);
             int vert_count = 0;
 
             generate_brush_vertices(e, b);
@@ -107,22 +112,22 @@ void geo_generator_run()
 
                 for (int v = 0; v < face_geo_inst->vertex_count; ++v)
                 {
-                    brush_inst->center = vec3_add(brush_inst->center, face_geo_inst->vertices[v].vertex);
+                    glm_vec3_add(brush_inst->center, face_geo_inst->vertices[v].vertex, brush_inst->center);
                     vert_count++;
                 }
             }
 
             if (vert_count > 0)
             {
-                brush_inst->center = vec3_div_double(brush_inst->center, vert_count);
+                glm_vec3_divs(brush_inst->center, vert_count, brush_inst->center);
             }
 
-            ent_inst->center = vec3_add(ent_inst->center, brush_inst->center);
+            glm_vec3_add(ent_inst->center, brush_inst->center, ent_inst->center);
         }
 
         if (ent_inst->brush_count > 0)
         {
-            ent_inst->center = vec3_div_double(ent_inst->center, ent_inst->brush_count);
+            glm_vec3_divs(ent_inst->center, ent_inst->brush_count, ent_inst->center);
         }
     }
 
@@ -150,16 +155,16 @@ void geo_generator_run()
                 wind_brush_idx = b;
                 wind_face_idx = f;
 
-                wind_face_basis = vec3_sub(face_geo_inst->vertices[1].vertex, face_geo_inst->vertices[0].vertex);
-                wind_face_center = (vec3){0};
-                wind_face_normal = face_inst->plane_normal;
+                glm_vec3_sub(face_geo_inst->vertices[1].vertex, face_geo_inst->vertices[0].vertex, wind_face_basis);
+                glm_vec3_zero(wind_face_center);
+                glm_vec3_copy(face_inst->plane_normal, wind_face_normal);
 
                 for (int v = 0; v < face_geo_inst->vertex_count; ++v)
                 {
-                    wind_face_center = vec3_add(wind_face_center, face_geo_inst->vertices[v].vertex);
+                    glm_vec3_add(wind_face_center, face_geo_inst->vertices[v].vertex, wind_face_center);
                 }
 
-                wind_face_center = vec3_div_double(wind_face_center, face_geo_inst->vertex_count);
+                glm_vec3_divs(wind_face_center, face_geo_inst->vertex_count, wind_face_center);
 
                 qsort(face_geo_inst->vertices, face_geo_inst->vertex_count, sizeof(face_vertex), sort_vertices_by_winding);
 
@@ -229,29 +234,34 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
                             {
                                 double threshold = cos((atof(phong_angle_property) + 0.01) * 0.0174533);
                                 normal = brush_inst->faces[f0].plane_normal;
-                                if (vec3_dot(brush_inst->faces[f0].plane_normal, brush_inst->faces[f1].plane_normal) > threshold)
+                                if (glm_vec3_dot(brush_inst->faces[f0].plane_normal, brush_inst->faces[f1].plane_normal) > threshold)
                                 {
-                                    normal = vec3_add(normal, brush_inst->faces[f1].plane_normal);
+                                    glm_vec3_add(normal, brush_inst->faces[f1].plane_normal, normal);
                                 }
-                                if (vec3_dot(brush_inst->faces[f0].plane_normal, brush_inst->faces[f2].plane_normal) > threshold)
+                                if (glm_vec3_dot(brush_inst->faces[f0].plane_normal, brush_inst->faces[f2].plane_normal) > threshold)
                                 {
-                                    normal = vec3_add(normal, brush_inst->faces[f2].plane_normal);
+                                    glm_vec3_add(normal, brush_inst->faces[f2].plane_normal, normal);
                                 }
-                                normal = vec3_normalize(normal);
+                                glm_vec3_normalize(normal);
                             }
                             else
                             {
-                                normal = vec3_normalize(
-                                    vec3_add(
-                                        brush_inst->faces[f0].plane_normal,
-                                        vec3_add(
-                                            brush_inst->faces[f1].plane_normal,
-                                            brush_inst->faces[f2].plane_normal)));
+                                glm_vec3_add(
+                                    brush_inst->faces[f1].plane_normal,
+                                    brush_inst->faces[f2].plane_normal,
+                                    normal
+                                );
+                                glm_vec3_add(
+                                    brush_inst->faces[f0].plane_normal,
+                                    normal,
+                                    normal
+                                );
+                                glm_vec3_normalize(normal);
                             }
                         }
                         else
                         {
-                            normal = face_inst->plane_normal;
+                            glm_vec3_copy(face_inst->plane_normal, normal);
                         }
 
                         texture_data *texture = map_data_get_texture(face_inst->texture_idx);
@@ -281,8 +291,10 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
 
                         for (int v = 0; v < face_geo_inst->vertex_count; ++v)
                         {
-                            vec3 comp_vertex = face_geo_inst->vertices[v].vertex;
-                            if (vec3_length(vec3_sub(vertex, comp_vertex)) < CMP_EPSILON)
+                            vec3 comp_vertex;
+                            glm_vec3_copy(comp_vertex, face_geo_inst->vertices[v].vertex);
+                            glm_vec3_sub(vertex, comp_vertex, comp_vertex);
+                            if (glm_vec3_norm(comp_vertex) < CMP_EPSILON)
                             {
                                 unique_vertex = false;
                                 duplicate_index = v;
