@@ -2,7 +2,7 @@
 #ifndef R_CAMERA_H_
 #define R_CAMERA_H_
 
-#include <cglm/cglm.h>
+#include "cglm/cglm.h"
 
 typedef struct {
     mat4 projection_view;

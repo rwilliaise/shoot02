@@ -1,11 +1,12 @@
 
 #include "r_shader.h"
 
-#include <glad/gl.h>
+#include "shoot02.h"
+#include "res.h"
+#include "glad/gl.h"
+
 #include <stdlib.h>
 #include <stdio.h>
-#include <shoot02.h>
-#include <res.h>
 
 static int r_check_compile(uint32_t shader, const char *shader_type) {
     int success;
