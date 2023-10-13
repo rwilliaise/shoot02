@@ -227,7 +227,7 @@ void surface_gatherer_run()
 
                     if(entity_inst->spawn_type == EST_ENTITY || entity_inst->spawn_type == EST_GROUP)
                     {
-                        vertex.vertex = vec3_sub(vertex.vertex, entity_inst->center);
+                        glm_vec3_sub(vertex.vertex, (float *) entity_inst->center, vertex.vertex);
                     }
 
                     surf_inst->vertices = realloc(surf_inst->vertices, (surf_inst->vertex_count + 1) * sizeof(face_vertex));

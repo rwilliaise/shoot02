@@ -215,7 +215,7 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
         {
             for (int f2 = 0; f2 < brush_inst->face_count; ++f2)
             {
-                vec3 vertex = (vec3){0};
+                vec3 vertex = GLM_VEC3_ZERO_INIT;
                 if (intersect_faces(brush_inst->faces[f0], brush_inst->faces[f1], brush_inst->faces[f2], &vertex))
                 {
                     if (vertex_in_hull(brush_inst->faces, brush_inst->face_count, vertex))
@@ -233,7 +233,7 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
                             if (phong_angle_property != NULL)
                             {
                                 double threshold = cos((atof(phong_angle_property) + 0.01) * 0.0174533);
-                                normal = brush_inst->faces[f0].plane_normal;
+                                glm_vec3_copy(brush_inst->faces[f0].plane_normal, normal);
                                 if (glm_vec3_dot(brush_inst->faces[f0].plane_normal, brush_inst->faces[f1].plane_normal) > threshold)
                                 {
                                     glm_vec3_add(normal, brush_inst->faces[f1].plane_normal, normal);
@@ -306,11 +306,15 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
                         {
                             face_geo_inst->vertex_count++;
                             face_geo_inst->vertices = realloc(face_geo_inst->vertices, face_geo_inst->vertex_count * sizeof(face_vertex));
-                            face_geo_inst->vertices[face_geo_inst->vertex_count - 1] = (face_vertex){vertex, normal, uv, tangent};
+                            face_vertex *out_vertex = &face_geo_inst->vertices[face_geo_inst->vertex_count - 1];
+                            glm_vec3_copy(vertex, out_vertex->vertex);
+                            glm_vec3_copy(normal, out_vertex->normal);
+                            out_vertex->uv = uv;
+                            out_vertex->tangent = tangent;
                         }
                         else if(phong)
                         {
-                            face_geo_inst->vertices[duplicate_index].normal = vec3_add(face_geo_inst->vertices[duplicate_index].normal, normal);
+                            glm_vec3_add(face_geo_inst->vertices[duplicate_index].normal, normal, face_geo_inst->vertices[duplicate_index].normal);
                         }
                         
                     }
@@ -325,18 +329,17 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
 
         for (int v = 0; v < face_geo_inst->vertex_count; ++v)
         {
-            face_geo_inst->vertices[v].normal = vec3_normalize(face_geo_inst->vertices[v].normal);
+            glm_vec3_normalize(face_geo_inst->vertices[v].normal);
         }
     }
 }
 
 bool intersect_faces(face f0, face f1, face f2, vec3 *o_vertex)
 {
-    vec3 normal0 = f0.plane_normal;
-    vec3 normal1 = f1.plane_normal;
-    vec3 normal2 = f2.plane_normal;
 
-    double denom = vec3_dot(vec3_cross(normal0, normal1), normal2);
+    vec3 f0_f1;
+    glm_vec3_cross(f0.plane_normal, f1.plane_normal, f0_f1);
+    double denom = glm_vec3_dot(f0_f1, f2.plane_normal);
 
     if (denom < CMP_EPSILON)
     {
@@ -345,19 +348,41 @@ bool intersect_faces(face f0, face f1, face f2, vec3 *o_vertex)
 
     if (o_vertex)
     {
-        *o_vertex = vec3_div_double(
-            vec3_add(
-                vec3_add(
-                    vec3_mul_double(
-                        vec3_cross(normal1, normal2),
-                        f0.plane_dist),
-                    vec3_mul_double(
-                        vec3_cross(normal2, normal0),
-                        f1.plane_dist)),
-                vec3_mul_double(
-                    vec3_cross(normal0, normal1),
-                    f2.plane_dist)),
-            denom);
+        vec3 f1_f2;
+        vec3 f2_f0;
+        glm_vec3_cross(f1.plane_normal, f2.plane_normal, f1_f2);
+        glm_vec3_cross(f2.plane_normal, f0.plane_normal, f2_f0);
+
+        glm_vec3_scale(
+            f1_f2,
+            f0.plane_dist,
+            f1_f2
+        );
+        glm_vec3_scale(
+            f2_f0,
+            f1.plane_dist,
+            f2_f0
+        );
+        glm_vec3_scale(
+            f0_f1,
+            f2.plane_dist,
+            f0_f1
+        );
+        glm_vec3_add(
+            f1_f2,
+            f2_f0,
+            f1_f2
+        );
+        glm_vec3_add(
+            f2_f0,
+            f0_f1,
+            *o_vertex
+        );
+        glm_vec3_divs(
+            *o_vertex,
+            denom,
+            *o_vertex
+        );
     }
 
     return true;
@@ -369,7 +394,7 @@ bool vertex_in_hull(face *faces, int face_count, vec3 vertex)
     {
         face face_inst = faces[f];
 
-        double proj = vec3_dot(face_inst.plane_normal, vertex);
+        double proj = glm_vec3_dot(face_inst.plane_normal, vertex);
 
         if (proj > face_inst.plane_dist && fabs(face_inst.plane_dist - proj) > CMP_EPSILON)
         {
@@ -384,21 +409,21 @@ vertex_uv get_standard_uv(vec3 vertex, const face *face, int texture_width, int 
 {
     vertex_uv uv_out;
 
-    double du = fabs(vec3_dot(face->plane_normal, UP_VECTOR));
-    double dr = fabs(vec3_dot(face->plane_normal, RIGHT_VECTOR));
-    double df = fabs(vec3_dot(face->plane_normal, FORWARD_VECTOR));
+    double du = fabs(glm_vec3_dot((float *) face->plane_normal, (float *) UP_VECTOR));
+    double dr = fabs(glm_vec3_dot((float *) face->plane_normal, (float *) RIGHT_VECTOR));
+    double df = fabs(glm_vec3_dot((float *) face->plane_normal, (float *) FORWARD_VECTOR));
 
     if (du >= dr && du >= df)
     {
-        uv_out = (vertex_uv){vertex.x, -vertex.y};
+        uv_out = (vertex_uv){vertex[0], -vertex[1]};
     }
     else if (dr >= du && dr >= df)
     {
-        uv_out = (vertex_uv){vertex.x, -vertex.z};
+        uv_out = (vertex_uv){vertex[0], -vertex[2]};
     }
     else if (df >= du && df >= dr)
     {
-        uv_out = (vertex_uv){vertex.y, -vertex.z};
+        uv_out = (vertex_uv){vertex[1], -vertex[2]};
     }
 
     vertex_uv rotated;
@@ -423,13 +448,11 @@ vertex_uv get_valve_uv(vec3 vertex, const face *face, int texture_width, int tex
 {
     vertex_uv uv_out;
 
-    vec3 u_axis = face->uv_valve.u.axis;
     double u_shift = face->uv_valve.u.offset;
-    vec3 v_axis = face->uv_valve.v.axis;
     double v_shift = face->uv_valve.v.offset;
 
-    uv_out.u = vec3_dot(u_axis, vertex);
-    uv_out.v = vec3_dot(v_axis, vertex);
+    uv_out.u = glm_vec3_dot((float *) face->uv_valve.u.axis, vertex);
+    uv_out.v = glm_vec3_dot((float *) face->uv_valve.v.axis, vertex);
 
     uv_out.u /= texture_width;
     uv_out.v /= texture_height;
@@ -461,9 +484,9 @@ vertex_tangent get_standard_tangent(const face *face)
 {
     vertex_tangent tangent_out;
 
-    double du = vec3_dot(face->plane_normal, UP_VECTOR);
-    double dr = vec3_dot(face->plane_normal, RIGHT_VECTOR);
-    double df = vec3_dot(face->plane_normal, FORWARD_VECTOR);
+    double du = glm_vec3_dot((float *) face->plane_normal, (float *) UP_VECTOR);
+    double dr = glm_vec3_dot((float *) face->plane_normal, (float *) RIGHT_VECTOR);
+    double df = glm_vec3_dot((float *) face->plane_normal, (float *) FORWARD_VECTOR);
 
     double dua = fabs(du);
     double dra = fabs(dr);
@@ -474,26 +497,26 @@ vertex_tangent get_standard_tangent(const face *face)
 
     if (dua >= dra && dua >= dfa)
     {
-        u_axis = FORWARD_VECTOR;
+        glm_vec3_copy((float *) FORWARD_VECTOR, u_axis);
         v_sign = sign(du);
     }
     else if (dra >= dua && dra >= dfa)
     {
-        u_axis = FORWARD_VECTOR;
+        glm_vec3_copy((float *) FORWARD_VECTOR, u_axis);
         v_sign = -sign(dr);
     }
     else if (dfa >= dua && dfa >= dra)
     {
-        u_axis = RIGHT_VECTOR;
+        glm_vec3_copy((float *) RIGHT_VECTOR, u_axis);
         v_sign = sign(df);
     }
 
     v_sign *= sign(face->uv_extra.scale_y);
-    u_axis = vec3_rotate(u_axis, face->plane_normal, -face->uv_extra.rot * v_sign);
+    glm_vec3_rotate(u_axis, -face->uv_extra.rot * v_sign, (float *) face->plane_normal);
 
-    tangent_out.x = u_axis.x;
-    tangent_out.y = u_axis.y;
-    tangent_out.z = u_axis.z;
+    tangent_out.x = u_axis[0];
+    tangent_out.y = u_axis[1];
+    tangent_out.z = u_axis[2];
     tangent_out.w = v_sign;
 
     return tangent_out;
@@ -503,14 +526,18 @@ vertex_tangent get_valve_tangent(const face *face)
 {
     vertex_tangent tangent_out;
 
-    vec3 u_axis = vec3_normalize(face->uv_valve.u.axis);
-    vec3 v_axis = vec3_normalize(face->uv_valve.v.axis);
+    vec3 u_axis;
+    vec3 v_axis;
+    vec3 n_u;
+    glm_vec3_normalize_to((float *) face->uv_valve.u.axis, u_axis);
+    glm_vec3_normalize_to((float *) face->uv_valve.v.axis, v_axis);
+    glm_vec3_cross((float *) face->plane_normal, u_axis, n_u);
+    
+    double v_sign = -sign(glm_vec3_dot(n_u, v_axis));
 
-    double v_sign = -sign(vec3_dot(vec3_cross(face->plane_normal, u_axis), v_axis));
-
-    tangent_out.x = u_axis.x;
-    tangent_out.y = u_axis.y;
-    tangent_out.z = u_axis.z;
+    tangent_out.x = u_axis[0];
+    tangent_out.y = u_axis[1];
+    tangent_out.z = u_axis[2];
     tangent_out.w = v_sign;
 
     return tangent_out;
@@ -537,8 +564,8 @@ void geo_generator_print_entities()
                 {
                     face_vertex vertex = face_geo_inst->vertices[i];
                     printf("vertex: (%f %f %f), normal: (%f %f %f)\n",
-                           vertex.vertex.x, vertex.vertex.y, vertex.vertex.z,
-                           vertex.normal.x, vertex.normal.y, vertex.normal.z);
+                           vertex.vertex[0], vertex.vertex[1], vertex.vertex[2],
+                           vertex.normal[0], vertex.normal[1], vertex.normal[2]);
                 }
 
                 puts("Indices:");

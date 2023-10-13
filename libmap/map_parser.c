@@ -102,7 +102,7 @@ void reset_current_entity()
 
     current_entity.brush_count = 0;
 }
-
+ 
 bool map_parser_load(const char *map_file)
 {
     map_data_reset();
@@ -342,13 +342,13 @@ void token(const char *buf)
             switch (component_idx)
             {
             case 0:
-                current_face.plane_points.v0.x = atof(buf);
+                current_face.plane_points.v0[0] = atof(buf);
                 break;
             case 1:
-                current_face.plane_points.v0.y = atof(buf);
+                current_face.plane_points.v0[1] = atof(buf);
                 break;
             case 2:
-                current_face.plane_points.v0.z = atof(buf);
+                current_face.plane_points.v0[2] = atof(buf);
                 break;
             default:
                 break;
@@ -371,13 +371,13 @@ void token(const char *buf)
             switch (component_idx)
             {
             case 0:
-                current_face.plane_points.v1.x = atof(buf);
+                current_face.plane_points.v1[0] = atof(buf);
                 break;
             case 1:
-                current_face.plane_points.v1.y = atof(buf);
+                current_face.plane_points.v1[1] = atof(buf);
                 break;
             case 2:
-                current_face.plane_points.v1.z = atof(buf);
+                current_face.plane_points.v1[2] = atof(buf);
                 break;
             default:
                 break;
@@ -399,13 +399,13 @@ void token(const char *buf)
             switch (component_idx)
             {
             case 0:
-                current_face.plane_points.v2.x = atof(buf);
+                current_face.plane_points.v2[0] = atof(buf);
                 break;
             case 1:
-                current_face.plane_points.v2.y = atof(buf);
+                current_face.plane_points.v2[1] = atof(buf);
                 break;
             case 2:
-                current_face.plane_points.v2.z = atof(buf);
+                current_face.plane_points.v2[2] = atof(buf);
                 break;
             default:
                 break;
@@ -446,13 +446,13 @@ void token(const char *buf)
             switch (component_idx)
             {
             case 0:
-                current_face.uv_valve.u.axis.x = atof(buf);
+                current_face.uv_valve.u.axis[0] = atof(buf);
                 break;
             case 1:
-                current_face.uv_valve.u.axis.y = atof(buf);
+                current_face.uv_valve.u.axis[1] = atof(buf);
                 break;
             case 2:
-                current_face.uv_valve.u.axis.z = atof(buf);
+                current_face.uv_valve.u.axis[2] = atof(buf);
                 break;
             case 3:
                 current_face.uv_valve.u.offset = atof(buf);
@@ -478,13 +478,13 @@ void token(const char *buf)
             switch (component_idx)
             {
             case 0:
-                current_face.uv_valve.v.axis.x = atof(buf);
+                current_face.uv_valve.v.axis[0] = atof(buf);
                 break;
             case 1:
-                current_face.uv_valve.v.axis.y = atof(buf);
+                current_face.uv_valve.v.axis[1] = atof(buf);
                 break;
             case 2:
-                current_face.uv_valve.v.axis.z = atof(buf);
+                current_face.uv_valve.v.axis[2] = atof(buf);
                 break;
             case 3:
                 current_face.uv_valve.v.offset = atof(buf);
@@ -526,10 +526,13 @@ void newline()
 
 void commit_face()
 {
-    vec3 v0v1 = vec3_sub(current_face.plane_points.v1, current_face.plane_points.v0);
-    vec3 v1v2 = vec3_sub(current_face.plane_points.v2, current_face.plane_points.v1);
-    current_face.plane_normal = vec3_normalize(vec3_cross(v1v2, v0v1));
-    current_face.plane_dist = vec3_dot(current_face.plane_normal, current_face.plane_points.v0);
+    vec3 v0v1;
+    vec3 v1v2;
+    glm_vec3_sub(current_face.plane_points.v1, current_face.plane_points.v0, v0v1);
+    glm_vec3_sub(current_face.plane_points.v2, current_face.plane_points.v1, v1v2);
+    glm_vec3_cross(v1v2, v0v1, current_face.plane_normal);
+    glm_normalize(current_face.plane_normal);
+    current_face.plane_dist = glm_vec3_dot(current_face.plane_normal, current_face.plane_points.v0);
     current_face.is_valve_uv = valve_uvs;
 
     current_brush.face_count++;

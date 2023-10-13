@@ -2,6 +2,7 @@
 #include "shoot02.h"
 
 #include "libmap/map_parser.h"
+#include "libmap/surface_gatherer.h"
 #include "r_model.h"
 #include "r_shader.h"
 #include "r_camera.h"
@@ -99,6 +100,8 @@ int main(int argc, char *argv[]) {
     stbi_image_free(data);
 
     map_parser_load("res/maps/debug00.map");
+    surface_gatherer_run();
+    
 
     r_model_t *cube_model = r_model_load("res/models/monkey.obj");
 

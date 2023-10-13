@@ -297,17 +297,17 @@ void map_data_print_entities()
                 printf("Face %d\n", f);
                 printf(
                     "(%f %f %f) (%f %f %f) (%f %f %f)\n%s %f %f\n[%f %f %f %f] [%f %f %f %f]\n%f %f %f\n\n",
-                    brush_face.plane_points.v0.x, brush_face.plane_points.v0.y, brush_face.plane_points.v0.z,
-                    brush_face.plane_points.v1.x, brush_face.plane_points.v1.y, brush_face.plane_points.v1.z,
-                    brush_face.plane_points.v2.x, brush_face.plane_points.v2.y, brush_face.plane_points.v2.z,
+                    brush_face.plane_points.v0[0], brush_face.plane_points.v0[1], brush_face.plane_points.v0[2],
+                    brush_face.plane_points.v1[0], brush_face.plane_points.v1[1], brush_face.plane_points.v1[2],
+                    brush_face.plane_points.v2[0], brush_face.plane_points.v2[1], brush_face.plane_points.v2[2],
 
                     map_data_get_texture(brush_face.texture_idx)->name,
 
                     brush_face.uv_standard.u,
                     brush_face.uv_standard.v,
 
-                    brush_face.uv_valve.u.axis.x, brush_face.uv_valve.u.axis.y, brush_face.uv_valve.u.axis.z, brush_face.uv_valve.u.offset,
-                    brush_face.uv_valve.v.axis.x, brush_face.uv_valve.v.axis.y, brush_face.uv_valve.v.axis.z, brush_face.uv_valve.v.offset,
+                    brush_face.uv_valve.u.axis[0], brush_face.uv_valve.u.axis[1], brush_face.uv_valve.u.axis[2], brush_face.uv_valve.u.offset,
+                    brush_face.uv_valve.v.axis[0], brush_face.uv_valve.v.axis[1], brush_face.uv_valve.v.axis[2], brush_face.uv_valve.v.offset,
 
                     brush_face.uv_extra.rot,
                     brush_face.uv_extra.scale_x,
