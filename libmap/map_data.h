@@ -1,7 +1,7 @@
 #ifndef MAP_DATA_H
 #define MAP_DATA_H
 
-#include <cglm/cglm.h>
+#include "../cglm/cglm.h"
 
 #include "entity.h"
 #include "libmap.h"

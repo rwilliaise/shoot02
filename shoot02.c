@@ -1,12 +1,14 @@
 
 #include "shoot02.h"
-
-#include "cglm/vec3.h"
+#include "libmap/geo_generator.h"
+#include "libmap/map_data.h"
 #include "libmap/map_parser.h"
 #include "libmap/surface_gatherer.h"
 #include "r_model.h"
+#include "r_res.h"
 #include "r_shader.h"
 #include "r_camera.h"
+
 #include "glad/gl.h"
 #include "stb_image.h"
 
@@ -151,18 +153,28 @@ int main(int argc, char *argv[]) {
 
     glUseProgram(program);
 
-    uint32_t texture;
-    int w, h, channels;
-    unsigned char *data = stbi_load("res/textures/conc00.png", &w, &h, &channels, 3);
+    r_texture_t *concrete = r_res_texture_from_name("res/textures/conc00.png");
 
-    glGenTextures(1, &texture);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
+    map_parser_load("res/maps/debug00.map");
+    geo_generator_run();
+
+    for (int i = 0; i < map_data_get_texture_count(); i++) {
+        const texture_data *texture = map_data_get_texture(i);
+        printf("%s\n", texture->name);
+
+        surface_gatherer_reset_params();
+        surface_gatherer_set_split_type(SST_BRUSH);
+        surface_gatherer_set_texture_filter(texture->name);
+        surface_gatherer_set_brush_filter_texture("dev/clip");
+        surface_gatherer_set_face_filter_texture("dev/skip");
+        surface_gatherer_set_worldspawn_layer_filter(1);
+
+        surface_gatherer_run();
+        const surfaces *surfaces = surface_gatherer_fetch();
+        _debug(surfaces->surface_count);
+        _debug(surfaces->surfaces[0].vertex_count);
+    }
+    
 
     r_model_t *cube_model = r_model_load("res/models/elephant.obj");
 
@@ -195,14 +207,15 @@ int main(int argc, char *argv[]) {
 
         // glm_rotate(model, M_PI * delta, (vec3) { 0, 1, 0 });
         glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
-        glBindTexture(GL_TEXTURE_2D, texture);
 
+        r_res_texture_bind(concrete);
         r_model_draw(cube_model);
 
         glfwSwapBuffers(r_window);
         glfwPollEvents();
     }
 
+    r_res_texture_unref(concrete);
     r_model_free(cube_model);
     glfwTerminate();
 
