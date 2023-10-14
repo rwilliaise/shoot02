@@ -1,7 +1,7 @@
 #ifndef FACE_H
 #define FACE_H
 
-#include <cglm/cglm.h>
+#include "../cglm/cglm.h"
 
 #include "stdbool.h"
 

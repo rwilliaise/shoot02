@@ -1,7 +1,7 @@
 #ifndef ENTITY_GEOMETRY_H
 #define ENTITY_GEOMETRY_H
 
-#include <cglm/cglm.h>
+#include "../cglm/cglm.h"
 
 typedef struct vertex_uv {
     double u;

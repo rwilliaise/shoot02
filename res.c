@@ -12,13 +12,14 @@ char *res_from_path(const char *path) {
     fseek(file, 0, SEEK_END);
     size_t size = ftell(file);
     fseek(file, 0, SEEK_SET);
-    char *out = malloc(size);
+    char *out = malloc(size + 1);
     if (out == NULL) {
         fclose(file);
         return NULL;
     }
     fread(out, 1, size, file);
     fclose(file);
+    out[size] = 0;
     return out;
 }
 

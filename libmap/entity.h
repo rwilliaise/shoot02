@@ -1,7 +1,7 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
-#include <cglm/cglm.h>
+#include "../cglm/cglm.h"
 
 typedef struct brush brush;
 

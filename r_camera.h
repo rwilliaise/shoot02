@@ -5,17 +5,16 @@
 #include "cglm/cglm.h"
 
 typedef struct {
-    mat4 projection_view;
     mat4 projection;
+    vec3 position;
+    vec3 forward;
     float fovy;
-    vec3 pos;
-    versor rot;
+    float yaw;
+    float pitch;
 } r_camera_t;
 
-void r_camera_upload(r_camera_t *C, uint32_t program);
-
+void r_camera_update(r_camera_t *C, uint32_t program);
 void r_camera_update_projection(r_camera_t *C, float aspect);
-void r_camera_update(r_camera_t *C);
 
 #endif // R_CAMERA_H_
 

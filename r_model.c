@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <assimp/material.h>
 #include <assimp/cimport.h>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -17,7 +18,7 @@ struct r_vertex {
     vec2 uv;
 };
 
-static void r_load_mesh(r_model_t *M, const struct aiMesh *mesh, int index) {
+static void r_load_mesh(r_model_t *M, const struct aiScene *scene, const struct aiMesh *mesh, int index) {
     r_mesh_t *out = &M->meshes[index];
     glGenVertexArrays(1, &out->vao);
     glGenBuffers(1, &out->vbo);
@@ -117,7 +118,7 @@ static void r_traverse_node(r_model_t **pM, const struct aiScene *scene, const s
     for (int i = 0; i < node->mNumMeshes; i++) {
         const struct aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
         _debug(start + i);
-        r_load_mesh(M, mesh, start + i);
+        r_load_mesh(M, scene, mesh, start + i);
     }
 
     for (int i = 0; i < node->mNumChildren; i++) {
