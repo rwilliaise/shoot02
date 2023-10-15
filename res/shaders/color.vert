@@ -16,6 +16,6 @@ void main() {
     vec3 normal_localspace = normalize((model * vec4(vert_normal, 1.0)).xyz);
     gl_Position = projection * view * model * vec4(vert_pos, 1.0);
     texcoord = vert_uv;
-    darkness = dot(light_dir, normal_localspace) * 0.5 + 0.5;
+    darkness = dot(light_dir, normal_localspace) * 0.5 + 1;
 }
 

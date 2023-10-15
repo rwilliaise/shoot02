@@ -36,7 +36,7 @@ r_texture_t *r_res_texture_from_name(char *name) {
     }
 
     int w, h, channels;
-    unsigned char *data = stbi_load(name, &w, &h, &channels, 0);
+    unsigned char *data = stbi_load(name, &w, &h, &channels, 3);
 
     if (data == NULL) {
         free(name);

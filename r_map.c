@@ -34,6 +34,8 @@ r_map_t *r_map_load(const char *path) {
         strcat(full_path, suffix_png);
 
         r_texture_t *rc_texture = r_res_texture_from_name(full_path);
+        printf("full_path: %s\n", full_path);
+        _debug(rc_texture->id);
         S->texture = rc_texture;
 
         surface_gatherer_reset_params();

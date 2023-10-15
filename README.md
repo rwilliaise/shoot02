@@ -7,7 +7,7 @@ My apologies for the messy file structure.
 ## Building
 
 The code uses Unix Makefiles to build. Required system libraries are
-[GLFW][glfw3_l] and [Assimp][assimp_l]. Both can be found on `pacman`.
+[GLFW][glfw3 link] and [Assimp][assimp link]. Both can be found on `pacman`.
 
 ```
 make
@@ -21,6 +21,6 @@ pacman -S glfw assimp
 May only build on Linux - have not tried Windows, but should work with mingw
 given that `glfw3`, `assimp`, and GL bindings are installed.
 
-    [glfw3_l]: https://github.com/glfw/glfw
-    [assimp_l]: https://github.com/assimp/assimp
+[glfw3 link]: https://github.com/glfw/glfw
+[assimp link]: https://github.com/assimp/assimp
 

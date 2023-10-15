@@ -172,7 +172,7 @@ int main(int argc, char *argv[]) {
     if (argc > 1)
         free(target_map);
 
-    glUniform1i(glGetUniformLocation(program, "tex"), 0);
+    // glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
     r_camera_update_projection(&camera, 4.f / 3.f);
     r_camera_update(&camera, program);
@@ -182,6 +182,7 @@ int main(int argc, char *argv[]) {
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 
     glfwSwapInterval(1);
     glfwSetMouseButtonCallback(r_window, cl_mouse_button);
