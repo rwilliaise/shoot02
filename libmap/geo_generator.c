@@ -292,7 +292,7 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
                         for (int v = 0; v < face_geo_inst->vertex_count; ++v)
                         {
                             vec3 comp_vertex;
-                            glm_vec3_copy(comp_vertex, face_geo_inst->vertices[v].vertex);
+                            glm_vec3_copy(face_geo_inst->vertices[v].vertex, comp_vertex);
                             glm_vec3_sub(vertex, comp_vertex, comp_vertex);
                             if (glm_vec3_norm(comp_vertex) < CMP_EPSILON)
                             {
@@ -306,6 +306,7 @@ void generate_brush_vertices(int entity_idx, int brush_idx)
                         {
                             face_geo_inst->vertex_count++;
                             face_geo_inst->vertices = realloc(face_geo_inst->vertices, face_geo_inst->vertex_count * sizeof(face_vertex));
+
                             face_vertex *out_vertex = &face_geo_inst->vertices[face_geo_inst->vertex_count - 1];
                             glm_vec3_copy(vertex, out_vertex->vertex);
                             glm_vec3_copy(normal, out_vertex->normal);
@@ -368,13 +369,14 @@ bool intersect_faces(face f0, face f1, face f2, vec3 *o_vertex)
             f2.plane_dist,
             f0_f1
         );
+
         glm_vec3_add(
             f1_f2,
             f2_f0,
             f1_f2
         );
         glm_vec3_add(
-            f2_f0,
+            f1_f2,
             f0_f1,
             *o_vertex
         );

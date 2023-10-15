@@ -152,8 +152,25 @@ int main(int argc, char *argv[]) {
     glUseProgram(program);
 
     r_texture_t *concrete = r_res_texture_from_namec("res/textures/conc00.png");
-    r_model_t *cube_model = r_model_load("res/models/elephant.obj");
-    r_map_t *debug00 = r_map_load("res/maps/debug00.map");
+    // r_model_t *cube_model = r_model_load("res/models/elephant.obj");
+
+    char *target_map;
+    if (argc > 1) {
+        const char *res_maps = "res/maps/";
+        const char *d_map = ".map";
+        char *base_name = argv[1];
+        target_map = malloc(strlen(res_maps) + strlen(d_map) + strlen(base_name) + 1);
+        *target_map = 0;
+        strcat(target_map, res_maps);
+        strcat(target_map, base_name);
+        strcat(target_map, d_map);
+    } else {
+        target_map = "res/maps/debug00.map";
+    }
+
+    r_map_t *debug00 = r_map_load(target_map);
+    if (argc > 1)
+        free(target_map);
 
     glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
@@ -185,15 +202,18 @@ int main(int argc, char *argv[]) {
         // glm_rotate(model, M_PI * delta, (vec3) { 0, 1, 0 });
         glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
 
-        r_res_texture_bind(concrete);
-        r_model_draw(cube_model);
+        // r_res_texture_bind(concrete);
+        // r_model_draw(cube_model);
+
+        r_map_draw(debug00);
 
         glfwSwapBuffers(r_window);
         glfwPollEvents();
     }
 
     r_res_texture_unref(concrete);
-    r_model_free(cube_model);
+    // r_model_free(cube_model);
+    r_map_free(debug00);
     glfwTerminate();
 
     return 0;

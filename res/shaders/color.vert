@@ -10,10 +10,12 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+const vec3 light_dir = normalize(vec3(1, 2, 1.5));
+
 void main() {
     vec3 normal_localspace = normalize((model * vec4(vert_normal, 1.0)).xyz);
     gl_Position = projection * view * model * vec4(vert_pos, 1.0);
     texcoord = vert_uv;
-    darkness = dot(vec3(0, 0, 1), normal_localspace) * 0.5 + 0.5;
+    darkness = dot(light_dir, normal_localspace) * 0.5 + 0.5;
 }
 

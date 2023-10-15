@@ -21,6 +21,7 @@ typedef struct {
 } r_map_t;
 
 r_map_t *r_map_load(const char *path);
+void r_map_draw(r_map_t *M);
 void r_map_free(r_map_t *M);
 
 #endif // R_MAP_H_
