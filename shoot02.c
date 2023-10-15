@@ -109,8 +109,8 @@ static void r_handle_gl_error(
     const GLchar *message,
     const void *ud
 ) {
-    fprintf(stderr, "GL %s (0x%.04x): %s\n",
-            type == GL_DEBUG_TYPE_ERROR ? "ERROR" : "MESSAGE",
+    if (type != GL_DEBUG_TYPE_ERROR) return;
+    fprintf(stderr, "GL ERROR (0x%.04x): %s\n",
             severity,
             message
     );
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     glUseProgram(program);
 
     r_texture_t *concrete = r_res_texture_from_namec("res/textures/conc00.png");
-    // r_model_t *cube_model = r_model_load("res/models/elephant.obj");
+    r_model_t *cube_model = r_model_load("res/models/monkey.obj");
 
     char *target_map;
     if (argc > 1) {
@@ -204,8 +204,8 @@ int main(int argc, char *argv[]) {
         glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
 
         // r_res_texture_bind(concrete);
-        // r_model_draw(cube_model);
-
+        glBindTexture(GL_TEXTURE_2D, 2);
+        r_model_draw(cube_model);
         r_map_draw(debug00);
 
         glfwSwapBuffers(r_window);
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
     }
 
     r_res_texture_unref(concrete);
-    // r_model_free(cube_model);
+    r_model_free(cube_model);
     r_map_free(debug00);
     glfwTerminate();
 

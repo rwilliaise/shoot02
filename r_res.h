@@ -10,6 +10,8 @@
 typedef struct {
     uint32_t id;
     uint32_t rc;
+    uint32_t w;
+    uint32_t h;
     char *name;
 } r_texture_t;
 

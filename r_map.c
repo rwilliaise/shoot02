@@ -15,15 +15,14 @@ static const char suffix_png[] = ".png";
 
 r_map_t *r_map_load(const char *path) {
     map_parser_load(path);
-    geo_generator_run();
 
     r_map_t *M = malloc(sizeof(r_map_t) + sizeof(r_surface_t) * map_data_get_texture_count());
+    if (M == NULL) return NULL;
     M->surface_count = map_data_get_texture_count();
 
     for (int i = 0; i < map_data_get_texture_count(); i++) {
         r_surface_t *S = &M->surfaces[i];
-        const texture_data *texture = map_data_get_texture(i);
-        printf("%s\n", texture->name);
+        texture_data *texture = map_data_get_texture(i);
 
         char *full_path = malloc(sizeof(prefix_res_textures) + sizeof(suffix_png) + strlen(texture->name) + 1);
         if (full_path == NULL) continue;
@@ -34,9 +33,19 @@ r_map_t *r_map_load(const char *path) {
         strcat(full_path, suffix_png);
 
         r_texture_t *rc_texture = r_res_texture_from_name(full_path);
-        printf("full_path: %s\n", full_path);
-        _debug(rc_texture->id);
         S->texture = rc_texture;
+
+        if (S->texture) {
+            texture->width = rc_texture->w;
+            texture->height = rc_texture->h;
+        }
+    }
+
+    geo_generator_run();
+
+    for (int i = 0; i < map_data_get_texture_count(); i++) {
+        r_surface_t *S = &M->surfaces[i];
+        texture_data *texture = map_data_get_texture(i);
 
         surface_gatherer_reset_params();
         surface_gatherer_set_split_type(SST_BRUSH);
@@ -48,7 +57,6 @@ r_map_t *r_map_load(const char *path) {
         surface_gatherer_run();
         const surfaces *surfaces = surface_gatherer_fetch();
         _debug(surfaces->surface_count);
-        _debug(surfaces->surfaces[0].vertex_count);
 
         S->meshes = malloc(sizeof(r_mesh_t) * surfaces->surface_count);
         S->mesh_count = surfaces->surface_count;
@@ -77,7 +85,6 @@ r_map_t *r_map_load(const char *path) {
                 current_vertex->vertex[1] = vertex_z;
                 current_vertex->normal[2] = current_vertex->normal[1];
                 current_vertex->normal[1] = normal_z;
-
             }
 
             glBindVertexArray(mesh->vao);
@@ -89,7 +96,7 @@ r_map_t *r_map_load(const char *path) {
 
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), NULL);
             glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, normal));
-            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, uv));
+            glVertexAttribPointer(2, 2, GL_DOUBLE, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, uv));
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
             glEnableVertexAttribArray(2);
@@ -104,7 +111,7 @@ void r_map_draw(r_map_t *M) {
     for (int i = 0; i < M->surface_count; i++) {
         r_surface_t *S = &M->surfaces[i];
         if (S->texture != NULL)
-            r_res_texture_bind(S->texture);
+           r_res_texture_bind(S->texture);
 
         for (int j = 0; j < S->mesh_count; j++) {
             r_mesh_t *mesh = &S->meshes[j];
