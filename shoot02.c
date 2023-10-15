@@ -19,7 +19,7 @@ GLFWwindow *r_window = NULL;
 uint32_t program = 0;
 r_camera_t camera = {
     .projection = GLM_MAT4_IDENTITY_INIT,
-    .forward = { 0, 0, -1 },
+    .forward = { 1, 0, 0 },
     .position = GLM_VEC3_ZERO_INIT,
     .fovy = 90.f,
     .yaw = 0,
@@ -183,6 +183,7 @@ int main(int argc, char *argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
     glfwSwapInterval(1);
     glfwSetMouseButtonCallback(r_window, cl_mouse_button);
@@ -200,13 +201,13 @@ int main(int argc, char *argv[]) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // glm_rotate(model, M_PI * delta, (vec3) { 0, 1, 0 });
-        glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
-
-        // r_res_texture_bind(concrete);
-        glBindTexture(GL_TEXTURE_2D, 2);
-        r_model_draw(cube_model);
+        glUniformMatrix4fv(model_location, 1, GL_FALSE, GLM_MAT4_IDENTITY[0]);
         r_map_draw(debug00);
+
+        glm_rotate(model, M_PI * delta, (vec3) { 0, 1, 0 });
+        glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
+        r_model_draw(cube_model); // the texture is  whatever is bound last
+                                  // teehee
 
         glfwSwapBuffers(r_window);
         glfwPollEvents();
