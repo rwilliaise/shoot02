@@ -1,9 +1,6 @@
 
 #include "shoot02.h"
-#include "libmap/geo_generator.h"
-#include "libmap/map_data.h"
-#include "libmap/map_parser.h"
-#include "libmap/surface_gatherer.h"
+#include "r_map.h"
 #include "r_model.h"
 #include "r_res.h"
 #include "r_shader.h"
@@ -15,6 +12,7 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <string.h>
 
 GLFWwindow *r_window = NULL;
 
@@ -153,30 +151,9 @@ int main(int argc, char *argv[]) {
 
     glUseProgram(program);
 
-    r_texture_t *concrete = r_res_texture_from_name("res/textures/conc00.png");
-
-    map_parser_load("res/maps/debug00.map");
-    geo_generator_run();
-
-    for (int i = 0; i < map_data_get_texture_count(); i++) {
-        const texture_data *texture = map_data_get_texture(i);
-        printf("%s\n", texture->name);
-
-        surface_gatherer_reset_params();
-        surface_gatherer_set_split_type(SST_BRUSH);
-        surface_gatherer_set_texture_filter(texture->name);
-        surface_gatherer_set_brush_filter_texture("dev/clip");
-        surface_gatherer_set_face_filter_texture("dev/skip");
-        surface_gatherer_set_worldspawn_layer_filter(1);
-
-        surface_gatherer_run();
-        const surfaces *surfaces = surface_gatherer_fetch();
-        _debug(surfaces->surface_count);
-        _debug(surfaces->surfaces[0].vertex_count);
-    }
-    
-
+    r_texture_t *concrete = r_res_texture_from_namec("res/textures/conc00.png");
     r_model_t *cube_model = r_model_load("res/models/elephant.obj");
+    r_map_t *debug00 = r_map_load("res/maps/debug00.map");
 
     glUniform1i(glGetUniformLocation(program, "tex"), 0);
 

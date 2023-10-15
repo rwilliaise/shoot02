@@ -5,35 +5,43 @@
 #include <stdlib.h>
 #include <string.h>
 
-r_texture_t textures[R_RES_TEXTURES_MAX];
+r_texture_t r_res_textures[R_RES_TEXTURES_MAX];
 
 r_texture_t *r_res_texture_lookup(const char *name) {
     for (int i = 0; i < R_RES_TEXTURES_MAX; i++) {
-        r_texture_t *texture = &textures[i];
+        r_texture_t *texture = &r_res_textures[i];
         if (texture->name != NULL && strcmp(name, texture->name) == 0)
             return r_res_texture_ref(texture);
     }
     return NULL;
 }
 
-r_texture_t *r_res_texture_from_name(const char *name) {
+r_texture_t *r_res_texture_from_name(char *name) {
     r_texture_t *out = r_res_texture_lookup(name);
-    if (out != NULL)
+    if (out != NULL) {
+        free(name);
         return out;
+    }
 
     for (int i = 0; i < R_RES_TEXTURES_MAX; i++) {
-        if (textures[i].rc == 0) {
-            out = &textures[i];
+        if (r_res_textures[i].rc == 0) {
+            out = &r_res_textures[i];
             break;
         }
     }
 
-    if (out == NULL) return NULL;
+    if (out == NULL) {
+        free(name);
+        return NULL;
+    }
 
     int w, h, channels;
     unsigned char *data = stbi_load(name, &w, &h, &channels, 0);
 
-    if (data == NULL) return NULL;
+    if (data == NULL) {
+        free(name);
+        return NULL;
+    }
 
     _debug(channels);
 
@@ -47,7 +55,7 @@ r_texture_t *r_res_texture_from_name(const char *name) {
 
     stbi_image_free(data);
 
-    out->name = strdup(name);
+    out->name = name;
     return r_res_texture_ref(out);
 }
 
