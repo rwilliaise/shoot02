@@ -5,7 +5,7 @@
 #include "shoot02.h"
 
 #include "r_model.h"
-#include "r_res.h"
+#include "r_texture.h"
 
 #define R_MAP_INVERSE_SCALE_FACTOR 16 // tb units in one meter
 

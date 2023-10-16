@@ -7,17 +7,17 @@
 
 r_texture_t r_res_textures[R_RES_TEXTURES_MAX];
 
-r_texture_t *r_res_texture_lookup(const char *name) {
+r_texture_t *r_texture_lookup(const char *name) {
     for (int i = 0; i < R_RES_TEXTURES_MAX; i++) {
         r_texture_t *texture = &r_res_textures[i];
         if (texture->name != NULL && strcmp(name, texture->name) == 0)
-            return r_res_texture_ref(texture);
+            return r_texture_ref(texture);
     }
     return NULL;
 }
 
-r_texture_t *r_res_texture_from_name(char *name) {
-    r_texture_t *out = r_res_texture_lookup(name);
+r_texture_t *r_texture_from_name(char *name) {
+    r_texture_t *out = r_texture_lookup(name);
     if (out != NULL) {
         free(name);
         return out;
@@ -46,7 +46,7 @@ r_texture_t *r_res_texture_from_name(char *name) {
     _debug(channels);
 
     glGenTextures(1, &out->id);
-    r_res_texture_bind(out);
+    r_texture_bind(out);
     
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -58,19 +58,19 @@ r_texture_t *r_res_texture_from_name(char *name) {
     out->name = name;
     out->w = w;
     out->h = h;
-    return r_res_texture_ref(out);
+    return r_texture_ref(out);
 }
 
-r_texture_t *r_res_texture_ref(r_texture_t *T) {
+r_texture_t *r_texture_ref(r_texture_t *T) {
     T->rc++;
     return T;
 }
 
-void r_res_texture_bind(r_texture_t *T) {
+void r_texture_bind(r_texture_t *T) {
     glBindTexture(GL_TEXTURE_2D, T->id);
 }
 
-void r_res_texture_unref(r_texture_t *T) {
+void r_texture_unref(r_texture_t *T) {
     T->rc--;
     if (T->rc <= 0) {
         glDeleteTextures(1, &T->id);

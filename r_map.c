@@ -32,7 +32,7 @@ r_map_t *r_map_load(const char *path) {
         strcat(full_path, texture->name);
         strcat(full_path, suffix_png);
 
-        r_texture_t *rc_texture = r_res_texture_from_name(full_path);
+        r_texture_t *rc_texture = r_texture_from_name(full_path);
         S->texture = rc_texture;
 
         if (S->texture) {
@@ -135,7 +135,7 @@ void r_map_draw(r_map_t *M) {
     for (int i = 0; i < M->surface_count; i++) {
         r_surface_t *S = &M->surfaces[i];
         if (S->texture != NULL) {
-           r_res_texture_bind(S->texture);
+           r_texture_bind(S->texture);
            r_mesh_t *mesh = &S->mesh;
            glBindVertexArray(mesh->vao);
            glDrawElements(GL_TRIANGLES, mesh->vertices, GL_UNSIGNED_INT, NULL);

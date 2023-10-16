@@ -2,7 +2,7 @@
 #include "shoot02.h"
 #include "r_map.h"
 #include "r_model.h"
-#include "r_res.h"
+#include "r_texture.h"
 #include "r_shader.h"
 #include "r_camera.h"
 
@@ -151,8 +151,8 @@ int main(int argc, char *argv[]) {
 
     glUseProgram(program);
 
-    r_texture_t *concrete = r_res_texture_from_namec("res/textures/conc00.png");
-    r_model_t *cube_model = r_model_load("res/models/monkey.obj");
+    r_texture_t *concrete = r_texture_from_namec("res/textures/conc00.png");
+    r_model_t *monkey_model = r_model_load("res/models/monkey.obj");
 
     char *target_map;
     if (argc > 1) {
@@ -183,7 +183,6 @@ int main(int argc, char *argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);
 
     glfwSwapInterval(1);
     glfwSetMouseButtonCallback(r_window, cl_mouse_button);
@@ -206,16 +205,18 @@ int main(int argc, char *argv[]) {
 
         glm_rotate(model, M_PI * delta, (vec3) { 0, 1, 0 });
         glUniformMatrix4fv(model_location, 1, GL_FALSE, model[0]);
-        r_model_draw(cube_model); // the texture is  whatever is bound last
-                                  // teehee
+
+        r_texture_bind(concrete);
+        r_model_draw(monkey_model);
 
         glfwSwapBuffers(r_window);
         glfwPollEvents();
     }
 
-    r_res_texture_unref(concrete);
-    r_model_free(cube_model);
+    r_texture_unref(concrete);
+    r_model_free(monkey_model);
     r_map_free(debug00);
+
     glfwTerminate();
 
     return 0;
