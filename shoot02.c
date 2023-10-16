@@ -183,7 +183,7 @@ int main(int argc, char *argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    // glCullFace(GL_FRONT);
 
     glfwSwapInterval(1);
     glfwSetMouseButtonCallback(r_window, cl_mouse_button);

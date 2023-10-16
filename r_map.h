@@ -11,8 +11,7 @@
 
 typedef struct {
     r_texture_t *texture;
-    uint32_t mesh_count;
-    r_mesh_t *meshes;
+    r_mesh_t mesh;
 } r_surface_t;
 
 typedef struct {

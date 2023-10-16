@@ -58,26 +58,28 @@ r_map_t *r_map_load(const char *path) {
         const surfaces *surfaces = surface_gatherer_fetch();
         _debug(surfaces->surface_count);
 
-        S->meshes = malloc(sizeof(r_mesh_t) * surfaces->surface_count);
-        S->mesh_count = surfaces->surface_count;
-        if (S->meshes == NULL) continue;
+        r_mesh_t *mesh = &S->mesh;
+
+        size_t vertex_count = 0;
+        size_t index_count = 0;
+
+        face_vertex *vertices = NULL;
+        int *indices = NULL;
 
         for (int s = 0; s < surfaces->surface_count; s++) {
             surface *current_surface = &surfaces->surfaces[s];
-            r_mesh_t *mesh = &S->meshes[s];
 
-            glGenVertexArrays(1, &mesh->vao);
-            glGenBuffers(1, &mesh->vbo);
-            glGenBuffers(1, &mesh->ebo);
+            size_t new_vertex_count = vertex_count + current_surface->vertex_count;
+            size_t new_index_count = index_count + current_surface->index_count;
 
-            _debug(mesh->vao);
+            vertices = realloc(vertices, sizeof(face_vertex) * new_vertex_count);
+            indices = realloc(indices, sizeof(int) * new_index_count);
 
-            mesh->vertices = (uint32_t) current_surface->index_count;
             for (int v = 0; v < current_surface->vertex_count; v++) {
                 // SHHHH SSSSSSHUT THE [ expletive ] UP DON'T TELL ANYONE I DID
                 // THIS
                 face_vertex *current_vertex = &current_surface->vertices[v];
-                glm_vec3_scale(current_vertex->vertex, 1.f / 16.f, current_vertex->vertex);
+                glm_vec3_divs(current_vertex->vertex, 16.f, current_vertex->vertex);
 
                 float vertex_z = current_vertex->vertex[2];
                 float normal_z = current_vertex->normal[2];
@@ -85,24 +87,46 @@ r_map_t *r_map_load(const char *path) {
                 current_vertex->vertex[1] = vertex_z;
                 current_vertex->normal[2] = current_vertex->normal[1];
                 current_vertex->normal[1] = normal_z;
+
+                vertices[vertex_count + v] = *current_vertex;
             }
 
-            glBindVertexArray(mesh->vao);
+            for (int v = 0; v < current_surface->index_count; v++) {
+                indices[index_count + v] = current_surface->indices[v] + vertex_count;
+            }
 
-            glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(face_vertex) * current_surface->vertex_count, current_surface->vertices, GL_STATIC_DRAW);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * current_surface->index_count, current_surface->indices, GL_STATIC_DRAW);
-
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), NULL);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, normal));
-            glVertexAttribPointer(2, 2, GL_DOUBLE, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, uv));
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
-            glEnableVertexAttribArray(2);
-
-            glBindVertexArray(0);
+            vertex_count = new_vertex_count;
+            index_count = new_index_count;
         }
+
+        mesh->vertices = index_count;
+
+        glGenVertexArrays(1, &mesh->vao);
+        glGenBuffers(1, &mesh->vbo);
+        glGenBuffers(1, &mesh->ebo);
+
+        glBindVertexArray(mesh->vao);
+        _debug(mesh->vao);
+        _debug(vertex_count);
+        _debugp(indices);
+        _debugp(vertices);
+
+        glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(face_vertex) * vertex_count, vertices, GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * index_count, indices, GL_STATIC_DRAW);
+
+        free(vertices);
+        free(indices);
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), NULL);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, normal));
+        glVertexAttribPointer(2, 2, GL_DOUBLE, GL_FALSE, sizeof(face_vertex), (void *) offsetof(face_vertex, uv));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+
+        glBindVertexArray(0);
     }
     return M;
 }
@@ -110,13 +134,11 @@ r_map_t *r_map_load(const char *path) {
 void r_map_draw(r_map_t *M) {
     for (int i = 0; i < M->surface_count; i++) {
         r_surface_t *S = &M->surfaces[i];
-        if (S->texture != NULL)
+        if (S->texture != NULL) {
            r_res_texture_bind(S->texture);
-
-        for (int j = 0; j < S->mesh_count; j++) {
-            r_mesh_t *mesh = &S->meshes[j];
-            glBindVertexArray(mesh->vao);
-            glDrawElements(GL_TRIANGLES, mesh->vertices, GL_UNSIGNED_INT, NULL);
+           r_mesh_t *mesh = &S->mesh;
+           glBindVertexArray(mesh->vao);
+           glDrawElements(GL_TRIANGLES, mesh->vertices, GL_UNSIGNED_INT, NULL);
         }
     }
 }
