@@ -6,7 +6,7 @@
 #include "libmap/map_data.h"
 #include "libmap/map_parser.h"
 #include "libmap/surface_gatherer.h"
-#include "r_res.h"
+#include "r_texture.h"
 
 #include <string.h>
 
@@ -60,8 +60,8 @@ r_map_t *r_map_load(const char *path) {
 
         r_mesh_t *mesh = &S->mesh;
 
-        size_t vertex_count = 0;
-        size_t index_count = 0;
+        uint32_t vertex_count = 0;
+        uint32_t index_count = 0;
 
         face_vertex *vertices = NULL;
         int *indices = NULL;

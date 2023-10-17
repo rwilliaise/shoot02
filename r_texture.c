@@ -1,5 +1,5 @@
 
-#include "r_res.h"
+#include "r_texture.h"
 #include "stb_image.h"
 
 #include <stdlib.h>
