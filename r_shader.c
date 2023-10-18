@@ -36,6 +36,9 @@ uint32_t r_create_render_program(const char *vert, const char *frag) {
     glShaderSource(vert_shader, 1, &vert_source, NULL);
     glShaderSource(frag_shader, 1, &frag_source, NULL);
 
+    free((char *) vert_source);
+    free((char *) frag_source);
+
     glCompileShader(vert_shader);
     glCompileShader(frag_shader);
 
@@ -65,8 +68,6 @@ uint32_t r_create_render_program(const char *vert, const char *frag) {
         return 0;
     }
 
-    free((char *) vert_source);
-    free((char *) frag_source);
     return out;
 }
 
