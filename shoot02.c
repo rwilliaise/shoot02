@@ -8,6 +8,9 @@
 
 #include "glad/gl.h"
 #include "stb_image.h"
+#include <time.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
@@ -57,6 +60,24 @@ static void cl_freecam_move(float delta) {
     }
     if (glfwGetKey(r_window, GLFW_KEY_ESCAPE)) {
         glfwSetInputMode(r_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
+    if (glfwGetKey(r_window, GLFW_KEY_F12)) {
+        int width, height;
+        stbi_flip_vertically_on_write(1);
+        glfwGetFramebufferSize(r_window, &width, &height);
+
+        uint8_t *pixels = malloc(3 * width * height);
+        time_t now = time(NULL);
+        struct tm *t = localtime(&now);
+
+        glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+        char filename[256];
+        strftime(filename, sizeof(filename), "%Y%m%d%H%M%S.png", t);
+
+        stbi_write_png(filename, width, height, STBI_rgb, pixels, 0);
+
+        free(pixels);
     }
 
     if (glm_vec3_dot(freecam_direction, freecam_direction) == 0) {
@@ -183,7 +204,6 @@ int main(int argc, char *argv[]) {
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
 
     glfwSwapInterval(1);
     glfwSetMouseButtonCallback(r_window, cl_mouse_button);

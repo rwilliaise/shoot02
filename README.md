@@ -1,5 +1,7 @@
 # shoot02
 
+![cover image][cover image]
+
 Toy game engine. Loads Quake `.map` files and most 3D model file formats.
 
 My apologies for the messy file structure.
@@ -23,4 +25,5 @@ given that `glfw3`, `assimp`, and GL bindings are installed.
 
 [glfw3 link]: https://github.com/glfw/glfw
 [assimp link]: https://github.com/assimp/assimp
+[cover image]: https://github.com/rwilliaise/shoot02/raw/main/cover.png
 
